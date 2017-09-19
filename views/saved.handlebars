@@ -53,9 +53,20 @@
       </div>
 
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#commentModal_{{this._id}}">
+      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#createModal_{{this._id}}">
         Comment
       </button>
+
+      <!-- Button trigger modal -->
+      <button id="showComments" data-id={{this._id}} type="button" class="btn btn-default" data-toggle="modal" data-target="#commentModal_{{this._id}}">
+        View Comments
+      </button>
+
+      {{#each comments}}
+      <div>
+        <p>{{this.body}}</p>
+      </div>
+      {{/each}}
 
     </div>
 
@@ -63,7 +74,7 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="commentModal_{{this._id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="createModal_{{this._id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -75,14 +86,50 @@
         </h3>
       </div>
       <div class="modal-body">
-        <form id="commentForm" action="/comment/{{this._id}}?_method=PUT" method="POST">
-          <textarea rows="5" cols="75" placeholder="Say something about this article..." form="commentForm"></textarea>
+
+        <form id="commentForm">
+
+          <textarea id="bodyinput" rows="5" cols="75" placeholder="Say something about this article..." form="commentForm"></textarea>
+
           <input id="comment" name="comment" value=true type="hidden">
+
         </form>
+
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+        <a href="/saved">
+
+        <button data-id={{this._id}} id="savenote" name="comment" type="button" class="btn btn-primary" action="/comment/{{this._id}}?_method=POST" method="POST">Submit</button>
+
+       </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="commentModal_{{this._id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="commentModalLabel">
+          Comments
+          <button type="button" class="close" data-dismiss="modal"  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </h3>
+      </div>
+      <div class="modal-body">
+      {{#each this.note}}
+          <p id="notes">{{this.body}}</p>
+      {{/each}}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <a href="/comment/{{this._id}}"><button id="submitComment" name="comment" type="button" class="btn btn-primary">Submit</button></a>
       </div>
     </div>
   </div>
@@ -90,3 +137,5 @@
 
 {{/if}}
 {{/each}}
+
+<script src="app.js"></script>

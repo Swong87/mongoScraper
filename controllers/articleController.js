@@ -1,6 +1,3 @@
-var mongojs = require("mongojs");
-var ObjectId = mongojs.ObjectId;
-
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
@@ -8,144 +5,162 @@ var cheerio = require("cheerio");
 // Database configuration
 var databaseUrl = "scraper";
 var collections = ["scrapedData"];
+var mongoose = require("mongoose");
 
-var db = mongojs(databaseUrl, collections);
+// Requiring our Note and Article models
+var Note = require("../models/Note.js");
+var Article = require("../models/Article.js");
+
+// Set mongoose to leverage built in JavaScript ES6 Promises
+mongoose.Promise = Promise;
+
+// Database configuration with mongoose
+// mongoose.connect("mongodb://localhost/scrape-o-matic");
+mongoose.connect("mongodb://heroku_dvl0nfm5:6n7v10g09fu96k9r3pbatc2fti@ds139844.mlab.com:39844/heroku_dvl0nfm5");
+var db = mongoose.connection;
+
+// Show any mongoose errors
 db.on("error", function(error) {
-  console.log("Database Error:", error);
+  console.log("Mongoose Error: ", error);
+});
+
+// Once logged in to the db through mongoose, log a success message
+db.once("open", function() {
+  console.log("Mongoose connection successful.");
 });
 
 module.exports = function(app) {
 
-  app.get("/", function(req, res) {
-    db.scrapedData.find({}, function(error, data) {
-      var hbsObject = {
-        articles: data
-      };
-      res.render("index", hbsObject);
-    });
-    
-  });
-
-  app.get("/saved", function(req, res) {
-    db.scrapedData.find({}, function(error, data) {
-      var hbsObject = {
-        articles: data
-      };
-      res.render("saved", hbsObject);
-    });
-  });
-
-  // Retrieve data from the db
-  app.get("/all", function(req, res) {
-    // Find all results from the scrapedData collection in the db
-    db.scrapedData.find({}, function(error, found) {
-      // Throw any errors to the console
-      if (error) {
-        console.log(error);
-      }
-      // If there are no errors, send the data to the browser as json
-      else {
-        res.json(found);
-      }
-    });
-  });
-
   // Scrape data from one site and place it into the mongodb db
   app.get("/scrape", function(req, res) {
-    // Make a request for the news section of ycombinator
+    // Make a request for the news section of buzzfeed
     request("https://www.buzzfeed.com/news?utm_term=.vs455WN8dD#.th2aaG6XOL", function(error, response, html) {
       // Load the html body from request into cheerio
       var $ = cheerio.load(html);
       var newArticles = [];
       // For each element with a "title" class
       $(".xs-px05").each(function(i, element) {
-        
-        // Save the text and href of each link enclosed in the current element
+
+        // Save an empty result object
+        var result = {};
         var homeLink = "https://www.buzzfeed.com";
-        var title = $(element).find("a").find("h2").text();
-        var summary = $(element).find("a").find("p").text();
-        var link = homeLink + $(element).children("a").attr("href");
 
+        result.title = $(element).find("a").find("h2").text();
+        result.summary = $(element).find("a").find("p").text();
+        result.link = homeLink + $(element).children("a").attr("href");
 
-        
-        if (title && link && summary) {
-          // Insert the data in the scrapedData db
-          db.scrapedData.insert({
-            title: title,
-            summary: summary,
-            link: link,
-            comments:[],
-            saved: false
-          },
-          function(err, inserted) {
-            if (err) {
-              // Log the error if one is encountered during the query
-              console.log(err);
-            }
-            else {
-              // Otherwise, log the inserted data
-              // console.log(inserted);
-            }
-          });
-        }
+        var entry = new Article(result);
+
+        // Now, save that entry to the db
+        entry.save(function(err, doc) {
+          // Log any errors
+          if (err) {
+            console.log(err);
+          }
+          // Or log the doc
+          else {
+            console.log(doc);
+          }
+        });
       });
-      // Send a "Scrape Complete" message to the browser
-    res.redirect("/");
-    });
-
-  });
-
-  app.put("/comment/:id", function(req, res) {
-    var selected = req.params.id;
-    console.log("Comment says: " + JSON.stringify(req.body.comment));
-    // db.scrapedData.update({
-    //   _id: ObjectId(selected)
-    // }, {
-    // $push: {comments: req.target.comment.value}
-    // }, function() {
-
-      res.redirect("/saved");
-    // })
-    
-  });
-
-  app.post("/", function(req, res) {
-    db.scrapedData.update({
-      saved: true
-    }).then(function(dbArticle) {
       res.redirect("/");
     });
   });
 
+  // Grabs all the articles that were scraped and not saved
+  app.get("/", function(req, res) {
+    Article.find({}, function(error, data) {
+      var hbsObject = {
+        articles: data
+      };
+      res.render("index", hbsObject);
+    });   
+  });
+
+  // This will get the articles we scraped from the mongoDB
+  app.get("/articles", function(req, res) {
+
+    Article.find({}, function(error, doc) {
+      if (error){
+        res.send(error);
+      } else {
+        res.send(doc);
+      }
+    })
+  });
+
+  // Grabs all the saved articles
+  app.get("/saved", function(req, res) {
+    Article.find({})
+      .populate("comment")
+      .exec(function(error, doc) {
+        if (error) {
+          res.send(error);
+        } else {
+          var hbsObject = {
+            articles: doc
+          };
+          res.render("saved", hbsObject);
+        }
+    });
+  });
+
+  // This will grab an article by it's ObjectId
+  app.get("/articles/:id", function(req, res) {
+    Article.findOne({ "_id": req.params.id })
+      .populate("note")
+      .exec(function(error, doc) {
+        if (error) {
+          res.send(error);
+        } else {
+          res.json(doc);
+        }
+    })
+  });
+
+  app.put("/:id", function(req, res) {
+    Article.findOneAndUpdate({ 
+      _id: req.params.id 
+    }, {
+      $set: {
+        saved: true
+      }
+    }, { new: true}, function(err, updated) {
+      if(err) {
+        console.log(err);
+      } else {
+        res.redirect("/");
+      }
+    })
+  })
+
+  // This deletes selected articles when button is pressed
   app.delete("/:id", function(req, res) {
     var selected = req.params.id;
-    db.scrapedData.remove({
-      _id: ObjectId(selected)
+    Article.remove({
+      _id: selected
     }, function(){
       res.redirect("/saved");
     });
   });
 
-// When the Save button is pressed
-  app.put("/:id", function(req, res) {
-    var selected = req.params.id;
-    console.log("Saved says: " + req);
-    console.log("ID: " + selected);
-    db.scrapedData.update({ 
-      _id: ObjectId(selected)
-    }, { 
-      $set: { 
-        saved: req.body.saved
-      } 
-    }, function(err, updated) {
-      if (err) {
-        // Log the error if one is encountered during the query
-        console.log(err);
+  // Create a new note or replace an existing note
+  app.post("/articles/:id", function(req, res) {
+    var newNote = new Note(req.body);
+    newNote.save(function(error, doc) {
+      if (error) {
+        res.send(error);
       } else {
-        // Otherwise, log the inserted data
-        console.log(updated);
-        res.redirect("/");
+        Article.findOneAndUpdate({ "_id": req.params.id }, { $push: { "note": doc._id } }, { new: true })
+          .exec(function(err, doc) {
+            if (err) {
+              res.send(err);
+            } else {
+              res.send(doc);
+            }
+        }) 
       }
-    });
+    })
   });
 };
+
