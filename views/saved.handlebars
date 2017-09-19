@@ -1,0 +1,92 @@
+<nav class="navbar navbar-default">
+  <div id="nav" class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><button class="btn btn-default" type="button">Home</button></a>
+      <a class="navbar-brand" href="/saved"><button class="btn btn-default" type="button">Saved</button></a>
+      <a class="navbar-brand" href="/scrape"><button class="btn btn-default" type="button">Scrape!</button></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="text-center row">
+
+    <div class="col-sm-12">
+
+      <div class="jumbotron">
+        <h1>Mongo Scraper</h1>
+        <h5>All the News That's Fit to Scrape</h5>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<h2 class="text-center">Saved Articles</h2>
+
+{{#each articles}}
+{{#if this.saved}}
+
+<div class="container">
+  <div class="row">
+
+    <div class="col-sm-12">
+
+      <div class="container-fluid header">
+      
+        <div class="col-sm-11">
+          <h4><a href={{this.link}} target="_blank">{{this.title}}</a></h4>
+        </div>
+
+        <div class="col-sm-1">
+          {{> articles/delete-article}}
+        </div>
+
+      </div>
+
+      <div class="container-fluid">
+        <p>{{this.summary}}</p>
+      </div>
+
+      <div class="row commentSection">
+      </div>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#commentModal_{{this._id}}">
+        Comment
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="commentModal_{{this._id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="commentModalLabel">
+          Comment on this Article
+          <button type="button" class="close" data-dismiss="modal"  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </h3>
+      </div>
+      <div class="modal-body">
+        <form id="commentForm" action="/comment/{{this._id}}?_method=PUT" method="POST">
+          <textarea rows="5" cols="75" placeholder="Say something about this article..." form="commentForm"></textarea>
+          <input id="comment" name="comment" value=true type="hidden">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <a href="/comment/{{this._id}}"><button id="submitComment" name="comment" type="button" class="btn btn-primary">Submit</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{/if}}
+{{/each}}
