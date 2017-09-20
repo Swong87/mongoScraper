@@ -15,8 +15,8 @@ var Article = require("../models/Article.js");
 mongoose.Promise = Promise;
 
 // Database configuration with mongoose
-mongoose.connect("mongodb://localhost/scrape-o-matic");
-// mongoose.connect("mongodb://heroku_dvl0nfm5:6n7v10g09fu96k9r3pbatc2fti@ds139844.mlab.com:39844/heroku_dvl0nfm5");
+// mongoose.connect("mongodb://localhost/scrape-o-matic");
+mongoose.connect("mongodb://heroku_dvl0nfm5:6n7v10g09fu96k9r3pbatc2fti@ds139844.mlab.com:39844/heroku_dvl0nfm5");
 var db = mongoose.connection;
 
 // Show any mongoose errors
