@@ -58,15 +58,9 @@
       </button>
 
       <!-- Button trigger modal -->
-      <button id="showComments" data-id={{this._id}} type="button" class="btn btn-default" data-toggle="modal" data-target="#commentModal_{{this._id}}">
+      <button data-id={{this._id}} type="button" class="btn btn-default" data-toggle="modal" data-target="#commentModal_{{this._id}}">
         View Comments
       </button>
-
-      {{#each comments}}
-      <div>
-        <p>{{this.body}}</p>
-      </div>
-      {{/each}}
 
     </div>
 
@@ -89,7 +83,7 @@
 
         <form id="commentForm">
 
-          <textarea id="bodyinput" rows="5" cols="75" placeholder="Say something about this article..." form="commentForm"></textarea>
+          <textarea id="bodyinput_{{this._id}}" rows="5" cols="75" placeholder="Say something about this article..." form="commentForm"></textarea>
 
           <input id="comment" name="comment" value=true type="hidden">
 
@@ -102,7 +96,7 @@
 
         <a href="/saved">
 
-        <button data-id={{this._id}} id="savenote" name="comment" type="button" class="btn btn-primary" action="/comment/{{this._id}}?_method=POST" method="POST">Submit</button>
+        <button data-id={{this._id}} id="savenote" name="comment" type="button" class="btn btn-primary" action="/articles/{{this._id}}?_method=POST" method="POST">Submit</button>
 
        </a>
 
@@ -126,6 +120,7 @@
       <div class="modal-body">
       {{#each this.note}}
           <p id="notes">{{this.body}}</p>
+          <hr>
       {{/each}}
       </div>
       <div class="modal-footer">

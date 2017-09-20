@@ -92,7 +92,7 @@ module.exports = function(app) {
   // Grabs all the saved articles
   app.get("/saved", function(req, res) {
     Article.find({})
-      .populate("comment")
+      .populate("note")
       .exec(function(error, doc) {
         if (error) {
           res.send(error);
@@ -103,19 +103,6 @@ module.exports = function(app) {
           res.render("saved", hbsObject);
         }
     });
-  });
-
-  // This will grab an article by it's ObjectId
-  app.get("/articles/:id", function(req, res) {
-    Article.findOne({ "_id": req.params.id })
-      .populate("note")
-      .exec(function(error, doc) {
-        if (error) {
-          res.send(error);
-        } else {
-          res.json(doc);
-        }
-    })
   });
 
   app.put("/:id", function(req, res) {
@@ -151,12 +138,12 @@ module.exports = function(app) {
       if (error) {
         res.send(error);
       } else {
-        Article.findOneAndUpdate({ "_id": req.params.id }, { $push: { "note": doc._id } }, { new: true })
+        Article.findOneAndUpdate({ _id: req.params.id }, { $push: { "note": doc._id } }, { new: true })
           .exec(function(err, doc) {
             if (err) {
               res.send(err);
             } else {
-              res.send(doc);
+              res.redirect("/saved");
             }
         }) 
       }
