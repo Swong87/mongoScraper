@@ -94,9 +94,9 @@
 
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
-        <a href="/saved">
+        <a id="savenote" data-id={{this._id}} href="/saved">
 
-        <button data-id={{this._id}} id="savenote" name="comment" type="button" class="btn btn-primary" action="/articles/{{this._id}}?_method=POST" method="POST">Submit</button>
+        <button name="comment" type="button" class="btn btn-primary" action="/articles/{{this._id}}?_method=POST" method="POST">Submit</button>
 
        </a>
 

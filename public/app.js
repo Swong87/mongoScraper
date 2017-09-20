@@ -8,7 +8,7 @@ $.getJSON("/articles", function(data) {
 });
 
 // When you click the savenote button
-$(document).on("click", "#savenote", function() {
+$("#savenote").on("click", function() {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
 
