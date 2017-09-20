@@ -131,6 +131,16 @@ module.exports = function(app) {
     });
   });
 
+  // This deletes selected notes when button is pressed
+  app.delete("/note/:id", function(req, res) {
+    var selected = req.params.id;
+    Note.remove({
+      _id: selected
+    }, function(){
+      res.redirect("/saved");
+    });
+  });
+
   // Create a new note or replace an existing note
   app.post("/articles/:id", function(req, res) {
     var newNote = new Note(req.body);

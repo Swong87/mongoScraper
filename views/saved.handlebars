@@ -120,6 +120,7 @@
       <div class="modal-body">
       {{#each this.note}}
           <p id="notes">{{this.body}}</p>
+          {{> articles/delete-note}}
           <hr>
       {{/each}}
       </div>
