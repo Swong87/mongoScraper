@@ -77,21 +77,9 @@ module.exports = function(app) {
     });   
   });
 
-  // This will get the articles we scraped from the mongoDB
-  app.get("/articles", function(req, res) {
-
-    Article.find({}, function(error, doc) {
-      if (error){
-        res.send(error);
-      } else {
-        res.send(doc);
-      }
-    })
-  });
-
   // Grabs all the saved articles
   app.get("/saved", function(req, res) {
-    Article.find({})
+    Article.find({}).sort({dateAdded: -1})
       .populate("note")
       .exec(function(error, doc) {
         if (error) {

@@ -5,6 +5,11 @@ var Schema = mongoose.Schema;
 
 // Create article schema
 var ArticleSchema = new Schema({
+  // Date added
+  dateAdded: {
+    type: Date,
+    default: Date.now
+  },
   // title is a required string
   title: {
     type: String,
